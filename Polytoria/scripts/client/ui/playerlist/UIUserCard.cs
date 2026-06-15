@@ -8,6 +8,7 @@ using Polytoria.Datamodel;
 using Polytoria.Datamodel.Resources;
 using Polytoria.Schemas.API;
 using Polytoria.Shared;
+using System;
 using System.Collections.Generic;
 
 namespace Polytoria.Client.UI.Playerlist;
@@ -85,7 +86,10 @@ public partial class UIUserCard : Control
 		var s = Globals.CreateInstanceFromScene<UIUserCardStat>(UserCardStat);
 		s.TargetStat = stat;
 		s.Root = this;
+
 		_statsContainer.AddChild(s);
+		_statsContainer.MoveChild(s, GetInsertIndex(stat));
+
 		_statToUserCardStat.Add(stat, s);
 
 		void OnStatDeleted()
@@ -96,6 +100,12 @@ public partial class UIUserCard : Control
 
 		stat.Deleted += OnStatDeleted;
 		RefreshBox();
+	}
+
+	private int GetInsertIndex(Stat stat)
+	{
+		Stat[] visibleStats = Root.Stats.GetVisibleStats();
+		return Array.IndexOf(visibleStats, stat);
 	}
 
 	private void OnStatVisibilityChanged(Stat stat)
