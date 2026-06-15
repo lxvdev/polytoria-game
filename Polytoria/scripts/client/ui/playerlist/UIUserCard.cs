@@ -70,6 +70,18 @@ public partial class UIUserCard : Control
 	private void AddStat(Stat stat)
 	{
 		if (_statToUserCardStat.ContainsKey(stat)) return;
+
+		stat.PropertyChanged.Connect(_ => OnStatVisibilityChanged(stat));
+
+		if (!stat.Visible) return;
+
+		CreateStatRow(stat);
+	}
+
+	private void CreateStatRow(Stat stat)
+	{
+		if (_statToUserCardStat.ContainsKey(stat)) return;
+
 		var s = Globals.CreateInstanceFromScene<UIUserCardStat>(UserCardStat);
 		s.TargetStat = stat;
 		s.Root = this;
@@ -84,6 +96,22 @@ public partial class UIUserCard : Control
 
 		stat.Deleted += OnStatDeleted;
 		RefreshBox();
+	}
+
+	private void OnStatVisibilityChanged(Stat stat)
+	{
+		bool hasRow = _statToUserCardStat.ContainsKey(stat);
+
+		if (stat.Visible && !hasRow)
+		{
+			CreateStatRow(stat);
+		}
+		else if (!stat.Visible && hasRow)
+		{
+			_statToUserCardStat[stat].QueueFree();
+			_statToUserCardStat.Remove(stat);
+			RefreshBox();
+		}
 	}
 
 	private void RemoveStat(Stat stat)
